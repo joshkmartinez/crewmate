@@ -26,8 +26,11 @@ bot.on("message", async (message) => {
     switch (command) {
       case "ping":
         let msg = await message.reply("Pinging...");
-        await msg.edit(`Pong 🏓
-        \nMessage round-trip took ${Date.now() - msg.createdTimestamp}ms.`);
+        await msg.edit(
+          `Pong 🏓\nMessage round-trip took ${
+            Date.now() - msg.createdTimestamp
+          }ms.`
+        );
         break;
 
       /* Unless you know what you're doing, don't change this command. */
@@ -110,13 +113,11 @@ let allLetters = (input) => {
 };
 
 let getGames = async () => {
-  const response = await axios.get(
-    config.db
-  );
+  const response = await axios.get(config.db);
   return response.data;
 };
 
-let startGame = async (guild, channel, gamemaster) => {
+let startGame = async (guild, channel, gamemaster, code) => {
   const games = await getGames();
 
   axios
@@ -127,14 +128,15 @@ let startGame = async (guild, channel, gamemaster) => {
         channel: channel,
         "start-time": Math.floor(new Date().getTime() / 100 / 60 / 60), //hours
         gamemaster: gamemaster,
-      }
+        code: code,
+      },
     })
-    .then((response)=> {
+    .then((response) => {
       console.log(response.data);
     })
-    .catch( (error) =>{
+    .catch((error) => {
       console.log(error);
-    })
+    });
 };
 
 let endGame = (input) => {};
@@ -170,7 +172,8 @@ bot.on("message", async (message) => {
         await startGame(
           message.guild.id,
           message.channel.id,
-          message.author.id
+          message.author.id,
+          code
         );
         await m.edit(
           "The game, `" +
@@ -189,6 +192,25 @@ bot.on("message", async (message) => {
 
       m.reactions.removeAll();
     });
+  }
+});
+
+// send game code on mention
+bot.on("message", async (message) => {
+  if (!message.mentions.has(bot.user)) return;
+  const games = await getGames();
+  for (i = 0; i < Object.keys(games).length; i++) {
+    if (Object.keys(games)[i] === message.channel.id) {
+      let msg =
+        "A game is currently being played in this channel.\nUse the code `" +
+        Object.values(games)[i].code +
+        "` to join it!";
+      if (Object.values(games)[i].gamemaster === message.author.id) {
+        msg +=
+          "\nYou are the game master of this game. To end this game, send `>end`.\nThe game will automatically end after 3 hours if it is not ended manually.";
+      }
+      return message.reply(msg);
+    }
   }
 });
 
