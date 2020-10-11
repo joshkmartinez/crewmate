@@ -117,11 +117,21 @@ bot.on("message", async (message) => {
                 .has("MANAGE_MESSAGES")
             ) {
               const gameCode = Object.values(games)[i].code;
+              console.log(games);
               delete games[message.channel.id];
-              await endGame(games);
-              return message.reply(
-                "The game, `" + gameCode + "`, has been ended in this channel."
-              );
+              console.log(games);
+              try {
+                await endGame(games);
+                return message.reply(
+                  "The game, `" +
+                    gameCode +
+                    "`, has been ended in this channel."
+                );
+              } catch (e) {
+                return message.reply(
+                  "Error ending game `" + gameCode + "`. Please try again."
+                );
+              }
             } else {
               return message.reply(userPermsError);
             }
@@ -131,7 +141,7 @@ bot.on("message", async (message) => {
       case "start":
       case "s":
       case "begin":
-        if (args[0] == null) {
+        if (!isValidGameCode(args[0])) {
           return message.reply(
             "Provide a game code in order to start a game\nRun `>help start` for more information"
           );
@@ -149,13 +159,16 @@ bot.on("message", async (message) => {
   }
 });
 
-let allLetters = (input) => {
-  for (let i = 0; i < input.length; i++) {
-    if (!Boolean(input.charAt(i).match(/[a-zA-Z]/))) {
+let isValidGameCode = (code) => {
+  if (code == null) {
+    return false;
+  }
+  for (let i = 0; i < code.length; i++) {
+    if (!Boolean(code.charAt(i).match(/[a-zA-Z]/))) {
       return false;
     }
   }
-  return true;
+  return code.length === 6 && code === code.toUpperCase();
 };
 
 let getGames = async () => {
@@ -187,9 +200,7 @@ let startGame = async (guild, channel, gamemaster, code) => {
 
 let endGame = (games) => {
   axios
-    .put(config.db, {
-      games,
-    })
+    .put(config.db, games)
     .then((response) => {
       //console.log(response.data);
     })
@@ -209,7 +220,7 @@ let existingGameCheck = async (message) => {
 };
 
 let startGameCheck = async (message, code) => {
-  if (code.length == 6 && code == code.toUpperCase() && allLetters(code)) {
+  if (isValidGameCode(code)) {
     //check for an existing game
     if (await existingGameCheck(message)) {
       return message.reply(
