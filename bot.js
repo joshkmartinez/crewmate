@@ -125,6 +125,11 @@ bot.on("message", async (message) => {
           }
         }
         return message.reply(startGameError);
+      case 'start':
+        startGameCheck(message,args[0]);
+
+      case 'mute':
+
     }
   }
 });
@@ -188,8 +193,7 @@ let existingGameCheck = async (message) => {
   return false;
 };
 
-bot.on("message", async (message) => {
-  let code = message.content;
+let startGameCheck = async(message, code) => {
   if (code.length == 6 && code == code.toUpperCase() && allLetters(code)) {
     //check for an existing game
     if (await existingGameCheck(message)) {
@@ -249,6 +253,11 @@ bot.on("message", async (message) => {
       m.reactions.removeAll();
     });
   }
+}
+
+bot.on("message", async (message) => {
+  let code = message.content;
+  startGameCheck(message, code)
 });
 
 // send game code on mention
