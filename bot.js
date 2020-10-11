@@ -15,7 +15,12 @@ let bot = new Client({
   },
 });
 
+//TODO: Change channel topic
+
 bot.on("ready", () => console.log(`Logged in as ${bot.user.tag}.`));
+
+const startGameError =
+  "A game of Among Us has not been started in this channel.\nSend a game code to start one!";
 
 bot.on("message", async (message) => {
   // Check for command
@@ -26,12 +31,11 @@ bot.on("message", async (message) => {
     switch (command) {
       case "ping":
         let msg = await message.reply("Pinging...");
-        await msg.edit(
+        return msg.edit(
           `Pong 🏓\nMessage round-trip took ${
             Date.now() - msg.createdTimestamp
           }ms.`
         );
-        break;
 
       /* Unless you know what you're doing, don't change this command. */
       case "help":
@@ -97,8 +101,31 @@ bot.on("message", async (message) => {
               );
           }
         }
-        message.channel.send(embed);
-        break;
+        return message.channel.send(embed);
+      case "end":
+        let games = await getGames();
+        for (i = 0; i < Object.keys(games).length; i++) {
+          if (Object.keys(games)[i] === message.channel.id) {
+            if (
+              Object.values(games)[i].gamemaster === message.author.id ||
+              message.channel
+                .permissionsFor(message.member)
+                .has("MANAGE_MESSAGES")
+            ) {
+              const gameCode = Object.values(games)[i].code;
+              delete games[message.channel.id];
+              await endGame(games);
+              return message.reply(
+                "The game, `" + gameCode + "`, has been ended in this channel."
+              );
+            } else {
+              message.reply(
+                "You need to be the game master or have manage message permissions in order run this command."
+              );
+            }
+          }
+        }
+        return message.reply(startGameError);
     }
   }
 });
@@ -132,18 +159,48 @@ let startGame = async (guild, channel, gamemaster, code) => {
       },
     })
     .then((response) => {
-      console.log(response.data);
+      //console.log(response.data);
     })
     .catch((error) => {
       console.log(error);
     });
 };
 
-let endGame = (input) => {};
+let endGame = (games) => {
+  axios
+    .put(config.db, {
+      games,
+    })
+    .then((response) => {
+      //console.log(response.data);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+};
+
+let existingGameCheck = async (message) => {
+  let games = await getGames();
+  for (i = 0; i < Object.keys(games).length; i++) {
+    if (Object.keys(games)[i] === message.channel.id) {
+      return true;
+    }
+  }
+  return false;
+};
 
 bot.on("message", async (message) => {
   let code = message.content;
   if (code.length == 6 && code == code.toUpperCase() && allLetters(code)) {
+    //check for an existing game
+    if (await existingGameCheck(message)) {
+      return message.reply(
+        "`" +
+          code +
+          "` looks like an Among Us game code, but a game is already being played in this channel.\nMention <@762721168741761075> to find the current game code.\nIf this game is over, run `>end`. The game will automatically end after 3 hours if it is not ended manually."
+      );
+    }
+
     let m = await message.reply(
       "`" +
         code +
@@ -178,7 +235,7 @@ bot.on("message", async (message) => {
         await m.edit(
           "The game, `" +
             code +
-            "` has been saved.\nJust got here? Mention <@" +
+            "`, has been saved.\nJust got here? Mention <@" +
             bot.user.id +
             "> to find the current game code."
         );
@@ -207,11 +264,12 @@ bot.on("message", async (message) => {
         "` to join it!";
       if (Object.values(games)[i].gamemaster === message.author.id) {
         msg +=
-          "\nYou are the game master of this game. To end this game, send `>end`.\nThe game will automatically end after 3 hours if it is not ended manually.";
+          "\nYou are the game master of this game. To end this game, run `>end`.\nThe game will automatically end after 3 hours if it is not ended manually.";
       }
       return message.reply(msg);
     }
   }
+  return message.reply(startGameError);
 });
 
 bot.login(config.token);
