@@ -1,5 +1,4 @@
 const { Client, MessageEmbed } = require("discord.js");
-const unirest = require("unirest");
 const axios = require("axios");
 const config = require("./config");
 const commands = require("./help");
