@@ -1,5 +1,6 @@
 const { Client, MessageEmbed } = require("discord.js");
 const axios = require("axios");
+const Statcord = require("statcord.js");
 const config = require("./config");
 const commands = require("./help");
 
@@ -13,10 +14,20 @@ let bot = new Client({
     },
   },
 });
+const statcord = new Statcord.Client({
+  key: config.statcord,
+  client: bot,
+});
 
 //TODO: Change channel topic
 
-bot.on("ready", () => console.log(`Logged in as ${bot.user.tag}.`));
+bot.on("ready", async () => {
+  console.log(`Logged in as ${bot.user.tag}.`);
+  await statcord.autopost();
+});
+statcord.on("autopost-start", () => {
+  console.log("Started statcord autopost.");
+});
 
 const startGameError =
   "A game of Among Us has not been started in this channel.\nSend a game code to start one!";
@@ -28,7 +39,11 @@ bot.on("message", async (message) => {
   if (message.content.startsWith(config.prefix)) {
     let args = message.content.slice(config.prefix.length).split(" ");
     let command = args.shift().toLowerCase();
-
+    try {
+      await statcord.postCommand(command, message.author.id);
+    } catch (e) {
+      console.log("Failed to post command stats to statcord");
+    }
     switch (command) {
       case "ping":
       case "p":
@@ -43,7 +58,7 @@ bot.on("message", async (message) => {
       case "help":
       case "h":
         let embed = new MessageEmbed()
-          .setTitle("Amoung Us Bot Commmands")
+          .setTitle("Among Us Bot Commands")
           .setColor("#123456")
           .setFooter(
             `Requested by: ${
@@ -54,7 +69,7 @@ bot.on("message", async (message) => {
             message.author.displayAvatarURL()
           )
           .setThumbnail(bot.user.displayAvatarURL());
-        if (!args[0])
+        if (!args[0]) {
           embed.setDescription(
             Object.keys(commands)
               .map(
@@ -68,7 +83,16 @@ bot.on("message", async (message) => {
               )
               .join("\n")
           );
-        else {
+          embed.addField(
+            "Please consider upvoting Crewmate :smiley:",
+            "https://discordbotlist.com/bots/crewmate-3698"
+          );
+          embed.addField(
+            "Bot invite link",
+            "https://discord.com/oauth2/authorize?client_id=762721168741761075&permissions=4196416&scope=bot"
+          );
+          embed.addField("Support server invite", "https://discord.gg/aRA7WcX");
+        } else {
           if (
             Object.keys(commands).includes(args[0].toLowerCase()) ||
             Object.keys(commands)
@@ -117,9 +141,7 @@ bot.on("message", async (message) => {
                 .has("MANAGE_MESSAGES")
             ) {
               const gameCode = Object.values(games)[i].code;
-              console.log(games);
               delete games[message.channel.id];
-              console.log(games);
               try {
                 await endGame(games);
                 return message.reply(
@@ -237,12 +259,16 @@ let startGameCheck = async (message, code) => {
     );
     await m.react("✅").then(await m.react("❌"));
 
-    const timeout = setTimeout(() => {
+    const timeout = setTimeout(async () => {
       try {
-        m.edit("Timeout reached. The game, `" + code + "` will not be saved.");
-        m.reactions.removeAll();
-      } catch {}
-    }, 30000);
+        await m.edit(
+          "Timeout reached. The game, `" +
+            code +
+            "` will not be saved.\nIf this was a mistake, send the game code again. Run `>help` for more information."
+        );
+        return m.reactions.removeAll();
+      } catch (e) {}
+    }, 10000);
 
     m.awaitReactions(
       (reaction, user) => {
@@ -251,7 +277,7 @@ let startGameCheck = async (message, code) => {
         }
         return true;
       },
-      { max: 1, time: 30000 }
+      { max: 1 }
     ).then(async () => {
       clearTimeout(timeout);
       try {
@@ -310,7 +336,10 @@ let toggleVCMute = async (message, state = true) => {
           "The members of the game, `" +
             gameCode +
             "`, have all been " +
-            (state ? "muted" : "unmuted")
+            (state ? "muted" : "unmuted") +
+            "\nIf you are still " +
+            (state ? "muted" : "unmuted") +
+            " its because of a permissions error. Ensure that the bot role is above all other roles."
         );
       } else {
         return message.reply(userPermsError);
@@ -322,12 +351,24 @@ let toggleVCMute = async (message, state = true) => {
 
 bot.on("message", async (message) => {
   let code = message.content;
-  startGameCheck(message, code);
+  if (isValidGameCode(code)) {
+    try {
+      await statcord.postCommand("CODE_START", message.author.id);
+    } catch (e) {
+      console.log("Failed to post command stats to statcord");
+    }
+  }
+  await startGameCheck(message, code);
 });
 
 // send game code on mention
 bot.on("message", async (message) => {
   if (!message.mentions.has(bot.user)) return;
+  try {
+    await statcord.postCommand("CODE_SEND", message.author.id);
+  } catch (e) {
+    console.log("Failed to post command stats to statcord");
+  }
   const games = await getGames();
   for (i = 0; i < Object.keys(games).length; i++) {
     if (Object.keys(games)[i] === message.channel.id) {
