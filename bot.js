@@ -20,6 +20,8 @@ bot.on("ready", () => console.log(`Logged in as ${bot.user.tag}.`));
 
 const startGameError =
   "A game of Among Us has not been started in this channel.\nSend a game code to start one!";
+const userPermsError =
+  "You need to be the game master or have manage message permissions in order run this command.";
 
 bot.on("message", async (message) => {
   // Check for command
@@ -118,18 +120,19 @@ bot.on("message", async (message) => {
                 "The game, `" + gameCode + "`, has been ended in this channel."
               );
             } else {
-              message.reply(
-                "You need to be the game master or have manage message permissions in order run this command."
-              );
+              return message.reply(userPermsError);
             }
           }
         }
         return message.reply(startGameError);
-      case 'start':
-        startGameCheck(message,args[0]);
+      case "start":
+        return startGameCheck(message, args[0]);
 
-      case 'mute':
+      case "mute":
+        return toggleVCMute(message);
 
+      case "unmute":
+        return toggleVCMute(message, false);
     }
   }
 });
@@ -193,7 +196,7 @@ let existingGameCheck = async (message) => {
   return false;
 };
 
-let startGameCheck = async(message, code) => {
+let startGameCheck = async (message, code) => {
   if (code.length == 6 && code == code.toUpperCase() && allLetters(code)) {
     //check for an existing game
     if (await existingGameCheck(message)) {
@@ -253,11 +256,50 @@ let startGameCheck = async(message, code) => {
       m.reactions.removeAll();
     });
   }
-}
+};
+
+let toggleVCMute = async (message, state = true) => {
+  let games = await getGames();
+  for (i = 0; i < Object.keys(games).length; i++) {
+    if (Object.keys(games)[i] === message.channel.id) {
+      if (
+        Object.values(games)[i].gamemaster === message.author.id ||
+        message.channel.permissionsFor(message.member).has("MANAGE_MESSAGES")
+      ) {
+        const gameCode = Object.values(games)[i].code;
+        if (message.member.voice.channel) {
+          let channel = message.guild.channels.cache.get(
+            message.member.voice.channel.id
+          );
+          for (const [memberID, member] of channel.members) {
+            try {
+              member.voice.setMute(state);
+            } catch (e) {
+              message.channel.send("Error unmuting " + member.mention);
+            }
+          }
+        } else {
+          return message.reply(
+            "You need to be in a voice channel to run this command."
+          );
+        }
+        return message.reply(
+          "The members of the game, `" +
+            gameCode +
+            "`, have all been " +
+            (state ? "muted" : "unmuted")
+        );
+      } else {
+        return message.reply(userPermsError);
+      }
+    }
+  }
+  return message.reply(startGameError);
+};
 
 bot.on("message", async (message) => {
   let code = message.content;
-  startGameCheck(message, code)
+  startGameCheck(message, code);
 });
 
 // send game code on mention
