@@ -21,7 +21,7 @@ module.exports = {
   },
   'mute': {
     aliases: ['m'],
-    description: 'Mutes/Unmutes everyone that is in voice channel of the game master.',
+    description: 'Mutes everyone that is in voice channel of the game master.',
     format: 'mute'
   },
   'unmute': {
