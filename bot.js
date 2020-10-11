@@ -47,11 +47,11 @@ bot.on("message", async (message) => {
     switch (command) {
       case "ping":
       case "p":
-        let msg = await message.reply("Pinging...");
-        return msg.edit(
-          `Pong 🏓\nMessage round-trip took ${
-            Date.now() - msg.createdTimestamp
-          }ms.`
+        let m = await message.channel.send("Pong 🏓");
+        return  m.edit(
+          `Pong 🏓\nBot latency is ${
+            m.createdTimestamp - message.createdTimestamp
+          }ms. Discord API Latency is ${bot.ws.ping}ms`
         );
 
       /* Unless you know what you're doing, don't change this command. */
@@ -59,7 +59,7 @@ bot.on("message", async (message) => {
       case "h":
         let embed = new MessageEmbed()
           .setTitle("Among Us Bot Commands")
-          .setColor("#123456")
+          .setColor("#C0EFDB")
           .setFooter(
             `Requested by: ${
               message.member
@@ -324,7 +324,12 @@ let toggleVCMute = async (message, state = true) => {
             try {
               member.voice.setMute(state);
             } catch (e) {
-              message.channel.send("Error unmuting " + member.mention);
+              await message.channel.send(
+                "Error " +
+                  (state ? "muting" : "unmuting") +
+                  " " +
+                  member.mention
+              );
             }
           }
         } else {
