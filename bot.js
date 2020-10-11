@@ -31,6 +31,7 @@ bot.on("message", async (message) => {
 
     switch (command) {
       case "ping":
+      case "p":
         let msg = await message.reply("Pinging...");
         return msg.edit(
           `Pong 🏓\nMessage round-trip took ${
@@ -40,6 +41,7 @@ bot.on("message", async (message) => {
 
       /* Unless you know what you're doing, don't change this command. */
       case "help":
+      case "h":
         let embed = new MessageEmbed()
           .setTitle("Amoung Us Bot Commmands")
           .setColor("#123456")
@@ -104,6 +106,7 @@ bot.on("message", async (message) => {
         }
         return message.channel.send(embed);
       case "end":
+      case "stop":
         let games = await getGames();
         for (i = 0; i < Object.keys(games).length; i++) {
           if (Object.keys(games)[i] === message.channel.id) {
@@ -126,12 +129,21 @@ bot.on("message", async (message) => {
         }
         return message.reply(startGameError);
       case "start":
+      case "s":
+      case "begin":
+        if (args[0] == null) {
+          return message.reply(
+            "Provide a game code in order to start a game\nRun `>help start` for more information"
+          );
+        }
         return startGameCheck(message, args[0]);
 
       case "mute":
+      case "m":
         return toggleVCMute(message);
 
       case "unmute":
+      case "um":
         return toggleVCMute(message, false);
     }
   }
