@@ -1,4 +1,4 @@
-require('./server')();
+require("./server")();
 
 const { Client, MessageEmbed } = require("discord.js");
 const axios = require("axios");
@@ -7,7 +7,7 @@ const config = require("./config");
 const commands = require("./help");
 
 let bot = new Client({
-  fetchAllMembers: true, // Remove this if the bot is in large guilds.
+  fetchAllMembers: true, // Remove this if the bot is in large servers.
   presence: {
     status: "online",
     activity: {
@@ -32,7 +32,7 @@ statcord.on("autopost-start", () => {
 });
 
 const startGameError =
-  "A game of Among Us has not been started in this channel.\nSend a game code to start one!";
+  "A game of Among Us has been started yet.\nSend a game code to start one!";
 const userPermsError =
   "You need to be the game master or have manage message permissions in order run this command.";
 
@@ -50,13 +50,12 @@ bot.on("message", async (message) => {
       case "ping":
       case "p":
         let m = await message.channel.send("Pong 🏓");
-        return  m.edit(
+        return m.edit(
           `Pong 🏓\nBot latency is ${
             m.createdTimestamp - message.createdTimestamp
           }ms. Discord API Latency is ${bot.ws.ping}ms`
         );
 
-      /* Unless you know what you're doing, don't change this command. */
       case "help":
       case "h":
         let embed = new MessageEmbed()
@@ -131,25 +130,34 @@ bot.on("message", async (message) => {
           }
         }
         return message.channel.send(embed);
+
       case "end":
       case "stop":
-        let games = await getGames();
-        for (i = 0; i < Object.keys(games).length; i++) {
-          if (Object.keys(games)[i] === message.channel.id) {
+      case "remove":
+        const endCode = args[0];
+        let games = Object.values(await getGames());
+        for (i = 0; i < games.length; i++) {
+          if (
+            endCode !== null
+              ? games[i].code === endCode
+              : games[i] === message.author.id
+          ) {
             if (
-              Object.values(games)[i].gamemaster === message.author.id ||
+              games[i].gamemaster.id === message.author.id ||
               message.channel
                 .permissionsFor(message.member)
                 .has("MANAGE_MESSAGES")
             ) {
-              const gameCode = Object.values(games)[i].code;
-              delete games[message.channel.id];
+              const gameCode = games[i].code;
+              games.splice(i, 1);
               try {
-                await endGame(games);
+                let updatedGames = {};
+                for (g of games) {
+                  updatedGames = { ...updatedGames, g };
+                }
+                await endGame(updatedGames);
                 return message.reply(
-                  "The game, `" +
-                    gameCode +
-                    "`, has been ended in this channel."
+                  "The game, `" + gameCode + "`, has been ended."
                 );
               } catch (e) {
                 return message.reply(
@@ -162,6 +170,7 @@ bot.on("message", async (message) => {
           }
         }
         return message.reply(startGameError);
+
       case "start":
       case "s":
       case "begin":
@@ -171,6 +180,10 @@ bot.on("message", async (message) => {
           );
         }
         return startGameCheck(message, args[0]);
+
+      case "list":
+      case "games":
+        return listGames(message, false);
 
       case "mute":
       case "m":
@@ -206,7 +219,7 @@ let startGame = async (guild, channel, gamemaster, code) => {
   axios
     .put(config.db, {
       ...games,
-      [channel]: {
+      [gamemaster.id]: {
         guild: guild,
         channel: channel,
         "start-time": Math.floor(new Date().getTime() / 100 / 60 / 60), //hours
@@ -233,10 +246,10 @@ let endGame = (games) => {
     });
 };
 
-let existingGameCheck = async (message) => {
+let existingOwnerCheck = async (message) => {
   let games = await getGames();
   for (i = 0; i < Object.keys(games).length; i++) {
-    if (Object.keys(games)[i] === message.channel.id) {
+    if (Object.keys(games)[i] === message.author.id) {
       return true;
     }
   }
@@ -245,21 +258,16 @@ let existingGameCheck = async (message) => {
 
 let startGameCheck = async (message, code) => {
   if (isValidGameCode(code)) {
-    //check for an existing game
-    if (await existingGameCheck(message)) {
-      return message.reply(
-        "`" +
-          code +
-          "` looks like an Among Us game code, but a game is already being played in this channel.\nMention <@762721168741761075> to find the current game code.\nIf this game is over, run `>end`. The game will automatically end after 3 hours if it is not ended manually."
-      );
-    }
-
     let m = await message.reply(
       "`" +
         code +
-        "` looks like an Among Us game code.\nWould you save this code and start a game?"
+        "` looks like an Among Us game code.\n" +
+        ((await existingOwnerCheck(message))
+          ? "**You are already running a game of Among Us, if you continue, your old game will be overwritten.**\n\n"
+          : "") +
+        "Would you save this code and start a game?"
     );
-    await m.react("✅").then(await m.react("❌"));
+    await m.react("✅").then(await m.react("❌")); //maybe remove the no option?
 
     const timeout = setTimeout(async () => {
       try {
@@ -270,7 +278,7 @@ let startGameCheck = async (message, code) => {
         );
         return m.reactions.removeAll();
       } catch (e) {}
-    }, 10000);
+    }, 15000);
 
     m.awaitReactions(
       (reaction, user) => {
@@ -283,12 +291,7 @@ let startGameCheck = async (message, code) => {
     ).then(async () => {
       clearTimeout(timeout);
       try {
-        await startGame(
-          message.guild.id,
-          message.channel.id,
-          message.author.id,
-          code
-        );
+        await startGame(message.guild, message.channel, message.author, code);
         await m.edit(
           "The game, `" +
             code +
@@ -312,7 +315,7 @@ let startGameCheck = async (message, code) => {
 let toggleVCMute = async (message, state = true) => {
   let games = await getGames();
   for (i = 0; i < Object.keys(games).length; i++) {
-    if (Object.keys(games)[i] === message.channel.id) {
+    if (Object.keys(games)[i] === message.author.id) {
       if (
         Object.values(games)[i].gamemaster === message.author.id ||
         message.channel.permissionsFor(message.member).has("MANAGE_MESSAGES")
@@ -339,14 +342,16 @@ let toggleVCMute = async (message, state = true) => {
             "You need to be in a voice channel to run this command."
           );
         }
+
         return message.reply(
           "The members of the game, `" +
             gameCode +
             "`, have all been " +
             (state ? "muted" : "unmuted") +
-            "\nIf you are still " +
+            ".\nIf you are still " +
             (state ? "muted" : "unmuted") +
-            " its because of a permissions error. Ensure that the bot role is above all other roles."
+            " its because of a permissions error. Ensure that the bot role is above all other roles." +
+            (!state ? "\n\n**If you are dead, be sure to mute yourself!**" : null)
         );
       } else {
         return message.reply(userPermsError);
@@ -376,21 +381,62 @@ bot.on("message", async (message) => {
   } catch (e) {
     console.log("Failed to post command stats to statcord");
   }
-  const games = await getGames();
-  for (i = 0; i < Object.keys(games).length; i++) {
-    if (Object.keys(games)[i] === message.channel.id) {
-      let msg =
-        "A game is currently being played in this channel.\nUse the code `" +
-        Object.values(games)[i].code +
-        "` to join it!";
-      if (Object.values(games)[i].gamemaster === message.author.id) {
-        msg +=
-          "\nYou are the game master of this game. To end this game, run `>end`.\nThe game will automatically end after 3 hours if it is not ended manually.";
-      }
-      return message.reply(msg);
+  return listGames(message);
+});
+
+const listGames = async (message) => {
+  const games = Object.values(await getGames());
+  let gamesList = [];
+  for (i = 0; i < games.length; i++) {
+    if (games[i].guild.id === message.guild.id) {
+      gamesList.push(games[i]);
     }
   }
-  return message.reply(startGameError);
-});
+
+  if (gamesList.length == 0) {
+    return message.reply(startGameError);
+  }
+
+  const generateEmbed = (start) => {
+    const current = gamesList.slice(start, start + 10);
+
+    const embed = new MessageEmbed().setTitle(
+      `Games ${start + 1}/${start + current.length} out of ${
+        gamesList.length
+      } in this server`
+    );
+    current.forEach((g) =>
+      embed.addField(
+        g.code,
+        "Gamemaster: <@" + g.gamemaster.id + ">" //dynamicly append a link to a vc channel if the game master is in one
+      )
+    );
+    return embed;
+  };
+
+  const author = message.author;
+
+  message.channel.send(generateEmbed(0)).then((message) => {
+    if (gamesList.length <= 5) return;
+    message.react("➡️");
+    const collector = message.createReactionCollector(
+      (reaction, user) =>
+        ["⬅️", "➡️"].includes(reaction.emoji.name) && user.id === author.id,
+      { time: 60000 }
+    );
+
+    let currentIndex = 0;
+    collector.on("collect", (reaction) => {
+      message.reactions.removeAll().then(async () => {
+        reaction.emoji.name === "⬅️"
+          ? (currentIndex -= 5)
+          : (currentIndex += 5);
+        message.edit(generateEmbed(currentIndex));
+        if (currentIndex !== 0) await message.react("⬅️");
+        if (currentIndex + 5 < gamesList.length) message.react("➡️");
+      });
+    });
+  });
+};
 
 bot.login(config.token);
