@@ -21,8 +21,6 @@ const statcord = new Statcord.Client({
   client: bot,
 });
 
-//TODO: Change channel topic
-
 bot.on("ready", async () => {
   console.log(`Logged in as ${bot.user.tag}.`);
   await statcord.autopost();
@@ -267,6 +265,7 @@ let startGameCheck = async (message, code) => {
           : "") +
         "Would you save this code and start a game?"
     );
+    //check if game code in use by another game in the same server
     await m.react("✅").then(await m.react("❌")); //maybe remove the no option?
 
     const timeout = setTimeout(async () => {
@@ -351,7 +350,9 @@ let toggleVCMute = async (message, state = true) => {
             ".\nIf you are still " +
             (state ? "muted" : "unmuted") +
             " its because of a permissions error. Ensure that the bot role is above all other roles." +
-            (!state ? "\n\n**If you are dead, be sure to mute yourself!**" : null)
+            (!state
+              ? "\n\n**If you are dead, be sure to mute yourself!**"
+              : null)
         );
       } else {
         return message.reply(userPermsError);
@@ -397,7 +398,7 @@ const listGames = async (message) => {
     return message.reply(startGameError);
   }
 
-  const generateEmbed = (start) => {
+  const generateEmbed = async (start) => {
     const current = gamesList.slice(start, start + 10);
 
     const embed = new MessageEmbed().setTitle(
@@ -405,10 +406,31 @@ const listGames = async (message) => {
         gamesList.length
       } in this server`
     );
+
+    //if in vc, create invite
+    let proceed, inv, pNum;
+    if (message.member.voice.channel) {
+      let channel = message.guild.channels.cache.get(
+        message.member.voice.channel.id
+      );
+      proceed = true;
+      inv = await channel.createInvite();
+      pNum = channel.members.size;
+    }
+
     current.forEach((g) =>
       embed.addField(
         g.code,
-        "Gamemaster: <@" + g.gamemaster.id + ">" //dynamicly append a link to a vc channel if the game master is in one
+        "Gamemaster: <@" +
+          g.gamemaster.id +
+          ">\n" +
+          (proceed
+            ? "[Voice channel Invite](" +
+              inv.toString() +
+              ") (" +
+              pNum +
+              " players)"
+            : "Gamemaster not in voice channel") //dynamicly append a link to a vc channel if the game master is in one
       )
     );
     return embed;
@@ -416,7 +438,7 @@ const listGames = async (message) => {
 
   const author = message.author;
 
-  message.channel.send(generateEmbed(0)).then((message) => {
+  message.channel.send(await generateEmbed(0)).then((message) => {
     if (gamesList.length <= 5) return;
     message.react("➡️");
     const collector = message.createReactionCollector(
