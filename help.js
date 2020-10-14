@@ -6,7 +6,7 @@ module.exports = {
   },
   ping: {
     aliases: ["p"],
-    description: "Measures connectivity with discord's servers.",
+    description: "Measures the bot's latency with discord.",
     format: "ping",
   },
   games: {
