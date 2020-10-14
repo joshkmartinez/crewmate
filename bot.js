@@ -136,9 +136,9 @@ bot.on("message", async (message) => {
         let games = Object.values(await getGames());
         for (i = 0; i < games.length; i++) {
           if (
-            endCode !== null
-              ? games[i].code === endCode
-              : games[i] === message.author.id
+            games[i].guild.id === message.guild.id && endCode == null
+              ? games[i].gamemaster.id === message.author.id //not given code
+              : games[i].code === endCode //given code, code is for a specific game in the server
           ) {
             if (
               games[i].gamemaster.id === message.author.id ||
@@ -148,11 +148,13 @@ bot.on("message", async (message) => {
             ) {
               const gameCode = games[i].code;
               games.splice(i, 1);
+
               try {
                 let updatedGames = {};
                 for (g of games) {
                   updatedGames = { ...updatedGames, g };
                 }
+
                 await endGame(updatedGames);
                 return message.reply(
                   "The game, `" + gameCode + "`, has been ended."
