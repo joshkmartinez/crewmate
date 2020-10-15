@@ -34,6 +34,10 @@ const startGameError =
 const userPermsError =
   "You need to be the game master or have manage message permissions in order run this command.";
 
+//match, game command that returns a random game that has under 10 players
+// list games with max players last, 7-9 first
+//help cmd links
+
 bot.on("message", async (message) => {
   // Check for command
   if (message.content.startsWith(config.prefix)) {
@@ -83,14 +87,14 @@ bot.on("message", async (message) => {
               .join("\n")
           );
           embed.addField(
-            "Please consider upvoting Crewmate :smiley:",
-            "https://discordbotlist.com/bots/crewmate-3698"
+            "Like Crewate?",
+            "Please consider [upvoting Crewmate](https://discordbotlist.com/bots/crewmate-3698) :smiley:\nOr you can [invite the bot to your own server!](https://discord.com/oauth2/authorize?client_id=762721168741761075&permissions=4196416&scope=bot)"
           );
+
           embed.addField(
-            "Bot invite link",
-            "https://discord.com/oauth2/authorize?client_id=762721168741761075&permissions=4196416&scope=bot"
+            "Need help?",
+            "[Join the Crewmate Bot Support Server](https://discord.gg/aRA7WcX)"
           );
-          embed.addField("Support server invite", "https://discord.gg/aRA7WcX");
         } else {
           if (
             Object.keys(commands).includes(args[0].toLowerCase()) ||
@@ -352,9 +356,7 @@ let toggleVCMute = async (message, state = true) => {
             ".\nIf you are still " +
             (state ? "muted" : "unmuted") +
             " its because of a permissions error. Ensure that the bot role is above all other roles." +
-            (!state
-              ? "\n\n**If you are dead, be sure to mute yourself!**"
-              : null)
+            (!state ? "\n\n**If you are dead, be sure to mute yourself!**" : "")
         );
       } else {
         return message.reply(userPermsError);
@@ -403,11 +405,13 @@ const listGames = async (message) => {
   const generateEmbed = async (start) => {
     const current = gamesList.slice(start, start + 10);
 
-    const embed = new MessageEmbed().setTitle(
-      `Games ${start + 1}/${start + current.length} out of ${
-        gamesList.length
-      } in this server`
-    );
+    const embed = new MessageEmbed()
+      .setTitle(
+        `Games ${start + 1}/${start + current.length} out of ${
+          gamesList.length
+        } in this server`
+      )
+      .setColor("#C0EFDB");
 
     //if in vc, create invite
     let proceed, inv, pNum;
