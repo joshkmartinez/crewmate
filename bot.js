@@ -61,7 +61,7 @@ bot.on("message", async (message) => {
       case "help":
       case "h":
         let embed = new MessageEmbed()
-          .setTitle("Among Us Bot Commands")
+          .setTitle("Crewmate Bot Commands")
           .setColor("#C0EFDB")
           .setFooter(
             `Requested by: ${
@@ -272,14 +272,14 @@ let startGameCheck = async (message, code) => {
         "Would you save this code and start a game?"
     );
     //check if game code in use by another game in the same server
-    await m.react("✅").then(await m.react("❌")); //maybe remove the no option?
+    await m.react("✅"); //.then(await m.react("❌")); //maybe remove the no option?
 
     const timeout = setTimeout(async () => {
       try {
         await m.edit(
           "Timeout reached. The game, `" +
             code +
-            "` will not be saved.\nIf this was a mistake, send the game code again. Run `>help` for more information."
+            "` will not be saved.\nIf this was a mistake, send the game code again.\nRun `>help` for more information."
         );
         return m.reactions.removeAll();
       } catch (e) {}
@@ -403,7 +403,7 @@ const listGames = async (message) => {
   }
 
   const generateEmbed = async (start) => {
-    const current = gamesList.slice(start, start + 10);
+    const current = gamesList.slice(start, start + 5);
 
     const embed = new MessageEmbed()
       .setTitle(
@@ -411,34 +411,36 @@ const listGames = async (message) => {
           gamesList.length
         } in this server`
       )
-      .setColor("#C0EFDB");
+      .setColor("#C0EFDB")
+      .setFooter("Run `>help` for help with Crewmate");
 
-    //if in vc, create invite
-    let proceed, inv, pNum;
-    if (message.member.voice.channel) {
-      let channel = message.guild.channels.cache.get(
-        message.member.voice.channel.id
-      );
-      proceed = true;
-      inv = await channel.createInvite();
-      pNum = channel.members.size;
-    }
-
-    current.forEach((g) =>
-      embed.addField(
-        g.code,
+    let computeField = async (g) => {
+      let inv, pNum;
+      const c = (
+        await (await bot.guilds.fetch(g.guild.id)).members.fetch(
+          g.gamemaster.id
+        )
+      ).voice.channel;
+      if (c) {
+        inv = (await c.createInvite()).toString();
+        pNum = c.members.size;
+      }
+      return (
         "Gamemaster: <@" +
-          g.gamemaster.id +
-          ">\n" +
-          (proceed
-            ? "[Voice channel Invite](" +
-              inv.toString() +
-              ") (" +
-              pNum +
-              " players)"
-            : "Gamemaster not in voice channel") //dynamicly append a link to a vc channel if the game master is in one
-      )
+        g.gamemaster.id +
+        ">\n" +
+        (c
+          ? "[Voice channel Invite](" + inv + ") (" + pNum + " players)"
+          : "Gamemaster not in voice channel")
+      );
+    };
+
+    await Promise.all(
+      current.map(async (g) => {
+        embed.addField(g.code, await computeField(g));
+      })
     );
+
     return embed;
   };
 
