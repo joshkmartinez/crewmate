@@ -1,8 +1,8 @@
 # Crewmate
 
 ### The best bot Among Us utility bot. Keeps track of game room codes and prevents in-game talking.
-
-Prefix: `>`
+#### [Invite]((https://discord.com/api/oauth2/authorize?client_id=762721168741761075&permissions=4196416&scope=bot))  - [Support Server](https://discord.gg/aRA7WcX)  
+Prefix: `>`  
 Commands:
 
 - `>help` - Lists all of the bot's commands.
