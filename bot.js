@@ -7,7 +7,7 @@ const config = require("./config");
 const commands = require("./help");
 
 let bot = new Client({
-  fetchAllMembers: true, // Remove this if the bot is in large servers.
+  fetchAllMembers: true, // Remove this bot is in large servers.
   presence: {
     status: "online",
     activity: {
@@ -36,10 +36,8 @@ const userPermsError =
 
 //match, game command that returns a random game that has under 10 players
 // list games with max players last, 7-9 first
-//help cmd links
 
 bot.on("message", async (message) => {
-  // Check for command
   if (message.content.startsWith(config.prefix)) {
     let args = message.content.slice(config.prefix.length).split(" ");
     let command = args.shift().toLowerCase();
@@ -283,7 +281,7 @@ let startGameCheck = async (message, code) => {
         );
         return m.reactions.removeAll();
       } catch (e) {}
-    }, 15000);
+    }, 16000);
 
     m.awaitReactions(
       (reaction, user) => {
