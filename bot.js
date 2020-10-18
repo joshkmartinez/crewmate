@@ -413,16 +413,18 @@ const listGames = async (message) => {
       .setFooter("Run `>help` for help with Crewmate");
 
     let computeField = async (g) => {
-      let inv, pNum;
-      const c = (
-        await (await bot.guilds.fetch(g.guild.id)).members.fetch(
-          g.gamemaster.id
-        )
-      ).voice.channel;
-      if (c) {
-        inv = (await c.createInvite()).toString();
-        pNum = c.members.size;
-      }
+      let c, inv, pNum;
+      try {
+        c = (
+          await (await bot.guilds.fetch(g.guild.id)).members.fetch(
+            g.gamemaster.id
+          )
+        ).voice.channel;
+        if (c) {
+          inv = (await c.createInvite()).toString();
+          pNum = c.members.size;
+        }
+      } catch (e) {} //gets thrown if member no longer is in guild
       return (
         "Gamemaster: <@" +
         g.gamemaster.id +
