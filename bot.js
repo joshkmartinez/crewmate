@@ -294,7 +294,12 @@ let startGameCheck = async (message, code) => {
     ).then(async () => {
       clearTimeout(timeout);
       try {
-        await startGame(message.guild.id, message.channel.id, message.author.id, code);
+        await startGame(
+          message.guild.id,
+          message.channel.id,
+          message.author.id,
+          code
+        );
         await m.edit(
           "The game, `" +
             code +
@@ -416,9 +421,7 @@ const listGames = async (message) => {
       let c, inv, pNum;
       try {
         c = (
-          await (await bot.guilds.fetch(g.guild)).members.fetch(
-            g.gamemaster
-          )
+          await (await bot.guilds.fetch(g.guild)).members.fetch(g.gamemaster)
         ).voice.channel;
         if (c) {
           inv = (await c.createInvite()).toString();
