@@ -138,12 +138,12 @@ bot.on("message", async (message) => {
         let games = Object.values(await getGames());
         for (i = 0; i < games.length; i++) {
           if (
-            games[i].guild.id === message.guild.id && endCode == null
-              ? games[i].gamemaster.id === message.author.id //not given code
+            games[i].guild === message.guild.id && endCode == null
+              ? games[i].gamemaster === message.author.id //not given code
               : games[i].code === endCode //given code, code is for a specific game in the server
           ) {
             if (
-              games[i].gamemaster.id === message.author.id ||
+              games[i].gamemaster === message.author.id ||
               message.channel
                 .permissionsFor(message.member)
                 .has("MANAGE_MESSAGES")
@@ -221,7 +221,7 @@ let startGame = async (guild, channel, gamemaster, code) => {
   axios
     .put(config.db, {
       ...games,
-      [gamemaster.id]: {
+      [gamemaster]: {
         guild: guild,
         channel: channel,
         "start-time": Math.floor(new Date().getTime() / 100 / 60 / 60), //hours
@@ -294,7 +294,7 @@ let startGameCheck = async (message, code) => {
     ).then(async () => {
       clearTimeout(timeout);
       try {
-        await startGame(message.guild, message.channel, message.author, code);
+        await startGame(message.guild.id, message.channel.id, message.author.id, code);
         await m.edit(
           "The game, `" +
             code +
@@ -391,7 +391,7 @@ const listGames = async (message) => {
   const games = Object.values(await getGames());
   let gamesList = [];
   for (i = 0; i < games.length; i++) {
-    if (games[i].guild.id === message.guild.id) {
+    if (games[i].guild === message.guild.id) {
       gamesList.push(games[i]);
     }
   }
@@ -416,8 +416,8 @@ const listGames = async (message) => {
       let c, inv, pNum;
       try {
         c = (
-          await (await bot.guilds.fetch(g.guild.id)).members.fetch(
-            g.gamemaster.id
+          await (await bot.guilds.fetch(g.guild)).members.fetch(
+            g.gamemaster
           )
         ).voice.channel;
         if (c) {
@@ -427,7 +427,7 @@ const listGames = async (message) => {
       } catch (e) {} //gets thrown if member no longer is in guild
       return (
         "Gamemaster: <@" +
-        g.gamemaster.id +
+        g.gamemaster +
         ">\n" +
         (c
           ? "[Voice channel Invite](" + inv + ") (" + pNum + " players)"
