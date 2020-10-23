@@ -219,7 +219,6 @@ let startGame = async (guild, channel, gamemaster, code) => {
     gamemaster: gamemaster,
     code: code,
   });
-  console.log(games);
   axios
     .put(config.db, games)
     .then((response) => {
@@ -252,65 +251,66 @@ let existingOwnerCheck = async (message) => {
 };
 
 let startGameCheck = async (message, code) => {
-  if (isValidGameCode(code)) {
-    let m = await message.reply(
-      "`" +
-        code +
-        "` looks like an Among Us game room code.\n" +
-        ((await existingOwnerCheck(message))
-          ? "**You are already running a game of Among Us, if you continue, your old game will be overwritten.**\n\n"
-          : "") +
-        "**Would you like to save this code and start a game?**\n"
-    );
-    //check if game code in use by another game in the same server
-    await m.react("✅"); //.then(await m.react("❌")); //maybe remove the no option?
-
-    const timeout = setTimeout(async () => {
-      try {
-        await m.edit(
-          "Timeout reached. The game, `" +
-            code +
-            "` will not be saved.\nIf this was a mistake, send the game code again.\nRun `>help` for more information."
-        );
-        return m.reactions.removeAll();
-      } catch (e) {}
-    }, 30000);
-
-    m.awaitReactions(
-      (reaction, user) => {
-        if (reaction.emoji.name !== "✅" || user.id !== message.author.id) {
-          return false;
-        }
-        return true;
-      },
-      { max: 1 }
-    ).then(async () => {
-      clearTimeout(timeout);
-      try {
-        await startGame(
-          message.guild.id,
-          message.channel.id,
-          message.author.id,
-          code
-        );
-        await m.edit(
-          "The game, `" +
-            code +
-            "`, has been saved.\nJust got here? Mention <@" +
-            bot.user.id +
-            "> to find the current game code."
-        );
-      } catch {
-        await m.edit(
-          "The game, `" +
-            code +
-            "` has failed to save.\nPlease try again later."
-        );
-      }
-
-      m.reactions.removeAll();
-    });
+  if (!isValidGameCode(code)) {
+    return;
   }
+  const intro = "`" + code + "` looks like an Among Us game room code.\n";
+
+  if (await existingOwnerCheck(message)) {
+    return message.reply(
+      intro +
+        "**You are already running a game of Among Us.**\nEnd your old game (`>end`) if you would like to start a new one."
+    );
+  }
+  let m = await message.reply(
+    intro + "**Would you like to save this code and start a game?**\n"
+  );
+  //check if game code in use by another game in the same server
+  await m.react("✅"); //.then(await m.react("❌")); //maybe remove the no option?
+
+  const timeout = setTimeout(async () => {
+    try {
+      await m.edit(
+        "Timeout reached. The game, `" +
+          code +
+          "` will not be saved.\nIf this was a mistake, send the game code again.\nRun `>help` for more information."
+      );
+      return m.reactions.removeAll();
+    } catch (e) {}
+  }, 30000);
+
+  m.awaitReactions(
+    (reaction, user) => {
+      if (reaction.emoji.name !== "✅" || user.id !== message.author.id) {
+        return false;
+      }
+      return true;
+    },
+    { max: 1 }
+  ).then(async () => {
+    clearTimeout(timeout);
+    try {
+      await startGame(
+        message.guild.id,
+        message.channel.id,
+        message.author.id,
+        code
+      );
+      await m.edit(
+        "The game, `" +
+          code +
+          "`, has been saved.\nJust got here? Mention <@" +
+          bot.user.id +
+          "> to find the current game code."
+      );
+    } catch {
+      await m.edit(
+        "The game, `" + code + "` has failed to save.\nPlease try again later."
+      );
+    }
+
+    m.reactions.removeAll();
+  });
 };
 
 let toggleVCMute = async (message, state = true) => {
