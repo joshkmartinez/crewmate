@@ -152,12 +152,7 @@ bot.on("message", async (message) => {
               games.splice(i, 1);
 
               try {
-                let updatedGames = {};
-                for (g of games) {
-                  updatedGames = { ...updatedGames, g };
-                }
-
-                await endGame(updatedGames);
+                await endGame(games);
                 return message.reply(
                   "The game, `" + gameCode + "`, has been ended."
                 );
@@ -216,19 +211,17 @@ let getGames = async () => {
 };
 
 let startGame = async (guild, channel, gamemaster, code) => {
-  const games = await getGames();
-
+  let games = await getGames();
+  games.push({
+    guild: guild,
+    channel: channel,
+    "start-time": Math.floor(new Date().getTime() / 100 / 60 / 60), //hours
+    gamemaster: gamemaster,
+    code: code,
+  });
+  console.log(games);
   axios
-    .put(config.db, {
-      ...games,
-      [gamemaster]: {
-        guild: guild,
-        channel: channel,
-        "start-time": Math.floor(new Date().getTime() / 100 / 60 / 60), //hours
-        gamemaster: gamemaster,
-        code: code,
-      },
-    })
+    .put(config.db, games)
     .then((response) => {
       //console.log(response.data);
     })
@@ -251,7 +244,7 @@ let endGame = (games) => {
 let existingOwnerCheck = async (message) => {
   let games = await getGames();
   for (i = 0; i < Object.keys(games).length; i++) {
-    if (Object.keys(games)[i] === message.author.id) {
+    if (Object.keys(games)[i].gamemaster === message.author.id) {
       return true;
     }
   }
@@ -323,7 +316,7 @@ let startGameCheck = async (message, code) => {
 let toggleVCMute = async (message, state = true) => {
   let games = await getGames();
   for (i = 0; i < Object.keys(games).length; i++) {
-    if (Object.keys(games)[i] === message.author.id) {
+    if (Object.keys(games)[i].gamemaster === message.author.id) {
       if (
         Object.values(games)[i].gamemaster === message.author.id ||
         message.channel.permissionsFor(message.member).has("MANAGE_MESSAGES")
