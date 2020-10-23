@@ -30,7 +30,7 @@ statcord.on("autopost-start", () => {
 });
 
 const startGameError =
-  "A game of Among Us has been started yet.\nSend a game code to start one!";
+  "A game of Among Us has been started yet.\nSend a game room code to start one!";
 const userPermsError =
   "You need to be the game master or have manage message permissions in order run this command.";
 
@@ -173,7 +173,7 @@ bot.on("message", async (message) => {
       case "begin":
         if (!isValidGameCode(args[0])) {
           return message.reply(
-            "Provide a game code in order to start a game\nRun `>help start` for more information"
+            "Provide a game room code in order to start a game\nRun `>help start` for more information"
           );
         }
         return startGameCheck(message, args[0]);
@@ -243,8 +243,8 @@ let endGame = (games) => {
 
 let existingOwnerCheck = async (message) => {
   let games = await getGames();
-  for (i = 0; i < Object.keys(games).length; i++) {
-    if (Object.keys(games)[i].gamemaster === message.author.id) {
+  for (i = 0; i < Object.values(games).length; i++) {
+    if (Object.values(games)[i].gamemaster === message.author.id) {
       return true;
     }
   }
@@ -256,11 +256,11 @@ let startGameCheck = async (message, code) => {
     let m = await message.reply(
       "`" +
         code +
-        "` looks like an Among Us game code.\n" +
+        "` looks like an Among Us game room code.\n" +
         ((await existingOwnerCheck(message))
           ? "**You are already running a game of Among Us, if you continue, your old game will be overwritten.**\n\n"
           : "") +
-        "Would you save this code and start a game?"
+        "**Would you like to save this code and start a game?**\n"
     );
     //check if game code in use by another game in the same server
     await m.react("✅"); //.then(await m.react("❌")); //maybe remove the no option?
@@ -274,7 +274,7 @@ let startGameCheck = async (message, code) => {
         );
         return m.reactions.removeAll();
       } catch (e) {}
-    }, 16000);
+    }, 30000);
 
     m.awaitReactions(
       (reaction, user) => {
@@ -315,8 +315,8 @@ let startGameCheck = async (message, code) => {
 
 let toggleVCMute = async (message, state = true) => {
   let games = await getGames();
-  for (i = 0; i < Object.keys(games).length; i++) {
-    if (Object.keys(games)[i].gamemaster === message.author.id) {
+  for (i = 0; i < Object.values(games).length; i++) {
+    if (Object.values(games)[i].gamemaster === message.author.id) {
       if (
         Object.values(games)[i].gamemaster === message.author.id ||
         message.channel.permissionsFor(message.member).has("MANAGE_MESSAGES")
