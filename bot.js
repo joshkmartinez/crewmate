@@ -259,7 +259,7 @@ let startGameCheck = async (message, code) => {
   if (await existingOwnerCheck(message)) {
     return message.reply(
       intro +
-        "**You are already running a game of Among Us.**\nEnd your old game (`>end`) if you would like to start a new one."
+        "**You are already running a game of Among Us.**\nEnd your old game [`>end`] if you would like to start a new one. (You might be running a game in a different server.)"
     );
   }
   let m = await message.reply(

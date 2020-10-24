@@ -6,7 +6,7 @@ module.exports = {
   },
   ping: {
     aliases: ["p"],
-    description: "Measures the bot's latency with discord.",
+    description: "Measures the bot's latency.",
     format: "ping",
   },
   games: {
@@ -17,13 +17,13 @@ module.exports = {
 
   start: {
     aliases: ["begin", "s"],
-    description: "Starts an Among Us game in the current channel.",
-    format: "start [game code]",
+    description: "Starts an Among Us game.",
+    format: "start [game-code]",
   },
   end: {
     aliases: ["stop","remove"],
-    description: "Ends the current Among Us game in the channel.",
-    format: "ends",
+    description: "Ends the an Among Us game.",
+    format: "ends [game-code] (optional)",
   },
   mute: {
     aliases: ["m"],
