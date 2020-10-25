@@ -11,7 +11,7 @@ module.exports = {
   },
   games: {
     aliases: ["list", "@Crewmate"],
-    description: "Lists all the Among Us games in the server.",
+    description: "Lists all Among Us games in the server.",
     format: "games",
   },
 
@@ -22,18 +22,18 @@ module.exports = {
   },
   end: {
     aliases: ["stop","remove"],
-    description: "Ends the an Among Us game.",
+    description: "Ends the an Among Us game. If no game code is provided the came you are running will be ended.",
     format: "ends [game-code] (optional)",
   },
   mute: {
     aliases: ["m"],
-    description: "Mutes everyone that is in voice channel of the game master.",
+    description: "Mutes everyone in voice channel of the game master.",
     format: "mute",
   },
   unmute: {
     aliases: ["um"],
     description:
-      "Unmutes everyone that is in voice channel of the game master.",
+      "Unmutes everyone in voice channel of the game master.",
     format: "unmute",
   },
 };
