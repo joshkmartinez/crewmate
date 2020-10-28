@@ -1,4 +1,4 @@
-require("./server")();
+//require("./server")();
 
 const { Client, MessageEmbed } = require("discord.js");
 const axios = require("axios");
@@ -7,7 +7,7 @@ const config = require("./config");
 const commands = require("./help");
 
 let bot = new Client({
-  fetchAllMembers: true, // Remove this bot is in large servers.
+  //fetchAllMembers: true, // Remove this bot is in large servers.
   presence: {
     status: "online",
     activity: {
@@ -256,12 +256,12 @@ let startGameCheck = async (message, code) => {
   }
   const intro = "`" + code + "` looks like an Among Us game room code.\n";
 
-  if (await existingOwnerCheck(message)) {
+  /*if (await existingOwnerCheck(message)) {
     return message.reply(
       intro +
-        "**You are already running a game of Among Us.**\nEnd your old game [`>end`] if you would like to start a new one. (You might be running a game in a different server.)"
+        "**You are already running a game of Among Us.**\nEnd your old game [`>end`] if you would like to start a new one. (You might be running a game in a different server)"
     );
-  }
+  }*/
   let m = await message.reply(
     intro + "**Would you like to save this code and start a game?**\n"
   );
@@ -420,7 +420,9 @@ const listGames = async (message) => {
           inv = (await c.createInvite()).toString();
           pNum = c.members.size;
         }
-      } catch (e) {} //gets thrown if member no longer is in guild
+      } catch (e) {
+        //gets thrown if member no longer is in guild
+      } 
       return (
         "Gamemaster: <@" +
         g.gamemaster +
@@ -457,7 +459,7 @@ const listGames = async (message) => {
         reaction.emoji.name === "⬅️"
           ? (currentIndex -= 5)
           : (currentIndex += 5);
-        message.edit(generateEmbed(currentIndex));
+        await message.edit(await generateEmbed(currentIndex));
         if (currentIndex !== 0) await message.react("⬅️");
         if (currentIndex + 5 < gamesList.length) message.react("➡️");
       });
