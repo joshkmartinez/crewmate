@@ -1,4 +1,4 @@
-//require("./server")();
+require("./server")();
 
 const { Client, MessageEmbed } = require("discord.js");
 const axios = require("axios");
@@ -33,6 +33,8 @@ const startGameError =
   "A game of Among Us has been started yet.\nSend a game room code to start one!";
 const userPermsError =
   "You need to be the game master or have manage message permissions in order run this command.";
+const reactionError =
+  "Error. The bot needs add reactions permissions in order to operate.\nPlease grant those permissions and try again.";
 
 //match, game command that returns a random game that has under 10 players
 // list games with max players last, 7-9 first
@@ -256,18 +258,21 @@ let startGameCheck = async (message, code) => {
   }
   const intro = "`" + code + "` looks like an Among Us game room code.\n";
 
-  /*if (await existingOwnerCheck(message)) {
+  if (await existingOwnerCheck(message)) {
     return message.reply(
       intro +
         "**You are already running a game of Among Us.**\nEnd your old game [`>end`] if you would like to start a new one. (You might be running a game in a different server)"
     );
-  }*/
+  }
   let m = await message.reply(
     intro + "**Would you like to save this code and start a game?**\n"
   );
   //check if game code in use by another game in the same server
-  await m.react("✅"); //.then(await m.react("❌")); //maybe remove the no option?
-
+  try {
+    await m.react("✅"); //.then(await m.react("❌")); //maybe remove the no option?
+  } catch (e) {
+    return message.reply(reactionError);
+  }
   const timeout = setTimeout(async () => {
     try {
       await m.edit(
@@ -422,7 +427,7 @@ const listGames = async (message) => {
         }
       } catch (e) {
         //gets thrown if member no longer is in guild
-      } 
+      }
       return (
         "Gamemaster: <@" +
         g.gamemaster +
@@ -444,9 +449,13 @@ const listGames = async (message) => {
 
   const author = message.author;
 
-  message.channel.send(await generateEmbed(0)).then((message) => {
+  message.channel.send(await generateEmbed(0)).then(async (message) => {
     if (gamesList.length <= 5) return;
-    message.react("➡️");
+    try {
+      await message.react("➡️");
+    } catch (e) {
+      return message.reply(reactionError);
+    }
     const collector = message.createReactionCollector(
       (reaction, user) =>
         ["⬅️", "➡️"].includes(reaction.emoji.name) && user.id === author.id,
@@ -454,12 +463,16 @@ const listGames = async (message) => {
     );
 
     let currentIndex = 0;
-    collector.on("collect", (reaction) => {
+    collector.on("collect", async (reaction) => {
+      await message.edit(
+        "↻ Loading games and generating vc channel invites..."
+      );
       message.reactions.removeAll().then(async () => {
         reaction.emoji.name === "⬅️"
           ? (currentIndex -= 5)
           : (currentIndex += 5);
         await message.edit(await generateEmbed(currentIndex));
+        await message.edit("");
         if (currentIndex !== 0) await message.react("⬅️");
         if (currentIndex + 5 < gamesList.length) message.react("➡️");
       });
