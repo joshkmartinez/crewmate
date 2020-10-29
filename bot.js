@@ -136,7 +136,8 @@ bot.on("message", async (message) => {
       case "end":
       case "stop":
       case "remove":
-        const endCode = args[0];
+        let endCode = args[0];
+        endCode != null ? endCode=endCode.toUpperCase() : null;
         let games = Object.values(await getGames());
         for (i = 0; i < games.length; i++) {
           if (
@@ -146,6 +147,7 @@ bot.on("message", async (message) => {
           ) {
             if (
               games[i].gamemaster === message.author.id ||
+              config.ownerID === message.author.id ||
               message.channel
                 .permissionsFor(message.member)
                 .has("MANAGE_MESSAGES")
@@ -173,12 +175,16 @@ bot.on("message", async (message) => {
       case "start":
       case "s":
       case "begin":
-        if (!isValidGameCode(args[0])) {
+        let code = args[0];
+        console.log(code!=null)
+        code != null ? code=code.toUpperCase() : null;
+        console.log(code)
+        if (!isValidGameCode(code)) {
           return message.reply(
             "Provide a game room code in order to start a game\nRun `>help start` for more information"
           );
         }
-        return startGameCheck(message, args[0]);
+        return startGameCheck(message, code);
 
       case "list":
       case "games":
