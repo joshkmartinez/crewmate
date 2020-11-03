@@ -36,6 +36,8 @@ const userPermsError =
 const reactionError =
   "Error. The bot needs add reactions permissions in order to operate.\nPlease grant those permissions and try again.";
 
+//same code in same guild, don't start game
+
 //match, game command that returns a random game that has under 10 players
 // list games with max players last, 7-9 first
 
@@ -87,8 +89,8 @@ bot.on("message", async (message) => {
               .join("\n")
           );
           embed.addField(
-            "Like Crewate?",
-            "Please consider [upvoting Crewmate](https://discordbotlist.com/bots/crewmate-3698) :smiley:\nOr you can [invite the bot to your own server!](https://discord.com/oauth2/authorize?client_id=762721168741761075&permissions=4196416&scope=bot)"
+            "Like Crewmate?",
+            "Consider [upvoting Crewmate](https://top.gg/bot/762721168741761075/vote)\n[Inviting the bot to your own server!](https://discord.com/oauth2/authorize?client_id=762721168741761075&permissions=4196416&scope=bot)\nOr [support development on patreon!](https://www.patreon.com/jokur) :smiley:"
           );
 
           embed.addField(
