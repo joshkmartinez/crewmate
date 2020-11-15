@@ -1,4 +1,4 @@
-require("./server")();
+//require("./server")();
 
 const { Client, MessageEmbed } = require("discord.js");
 const axios = require("axios");
@@ -7,7 +7,6 @@ const config = require("./config");
 const commands = require("./help");
 
 let bot = new Client({
-  //fetchAllMembers: true, // Remove this bot is in large servers.
   presence: {
     status: "online",
     activity: {
@@ -139,7 +138,7 @@ bot.on("message", async (message) => {
       case "stop":
       case "remove":
         let endCode = args[0];
-        endCode != null ? endCode=endCode.toUpperCase() : null;
+        endCode != null ? (endCode = endCode.toUpperCase()) : null;
         let games = Object.values(await getGames());
         for (i = 0; i < games.length; i++) {
           if (
@@ -178,9 +177,9 @@ bot.on("message", async (message) => {
       case "s":
       case "begin":
         let code = args[0];
-        console.log(code!=null)
-        code != null ? code=code.toUpperCase() : null;
-        console.log(code)
+        console.log(code != null);
+        code != null ? (code = code.toUpperCase()) : null;
+        console.log(code);
         if (!isValidGameCode(code)) {
           return message.reply(
             "Provide a game room code in order to start a game\nRun `>help start` for more information"
