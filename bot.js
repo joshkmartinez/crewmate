@@ -1,4 +1,4 @@
-// Require("./server")();
+require("./server")();
 
 const {Client, MessageEmbed} = require('discord.js')
 const axios = require('axios')
