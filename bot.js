@@ -178,9 +178,7 @@ bot.on('message', async (message) => {
 			case 's':
 			case 'begin':
 				let code = args[0]
-				console.log(code != null)
 				code != null ? (code = code.toUpperCase()) : null
-				console.log(code)
 				if (!isValidGameCode(code)) {
 					return message.reply(
 						'Provide a game room code in order to start a game\nRun `>help start` for more information'
