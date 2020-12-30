@@ -1,4 +1,4 @@
-require("./server")();
+require('./server')()
 
 const {Client, MessageEmbed} = require('discord.js')
 const axios = require('axios')
@@ -41,6 +41,7 @@ const reactionError =
 // list games with max players last, 7-9 first
 
 bot.on('message', async (message) => {
+	if (message.author.bot) return
 	if (message.content.startsWith(config.prefix)) {
 		const args = message.content.slice(config.prefix.length).split(' ')
 		const command = args.shift().toLowerCase()
