@@ -36,7 +36,7 @@ const reactionError =
 	'Error. The bot needs add reactions permissions in order to operate.\nPlease grant those permissions and try again.'
 
 // Same code in same guild, don't start game
-
+// allow owner to overwrite old game
 // match, game command that returns a random game that has under 10 players
 // list games with max players last, 7-9 first
 
@@ -199,6 +199,9 @@ bot.on('message', async (message) => {
 			case 'unmute':
 			case 'um':
 				return toggleVCMute(message, false)
+
+			case 'stats':
+				return message.channel.send((await getGames()).length + ' live games')
 		}
 	}
 })
