@@ -387,6 +387,7 @@ const toggleVCMute = async (message, state = true) => {
 }
 
 bot.on('message', async (message) => {
+	if (message.author.bot) return;
 	const code = message.content
 	if (isValidGameCode(code)) {
 		try {
@@ -401,6 +402,7 @@ bot.on('message', async (message) => {
 
 // Send game code on mention
 bot.on('message', async (message) => {
+	if (message.author.bot) return;
 	if (!message.mentions.has(bot.user)) return
 	try {
 		await statcord.postCommand('CODE_SEND', message.author.id)
