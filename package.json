@@ -5,9 +5,11 @@
   "main": "bot.js",
   "scripts": {
     "dev": "nodemon bot.js",
-    "start": "node bot.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "xo --fix --no-semicolon --prettier"
+    "start": "forever start bot.js",
+    "stop": "forever stop bot.js",
+    "list": "forever list",
+    "stopall": "forever stopall",
+    "cleanlogs": "forever cleanlogs"
   },
   "keywords": [],
   "author": "",
@@ -18,6 +20,7 @@
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "forever": "^3.0.4",
     "nodemon": "^2.0.7",
     "statcord.js": "^3.1.4"
   },
