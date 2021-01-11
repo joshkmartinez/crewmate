@@ -3,7 +3,7 @@ require('./server')()
 const {Client, MessageEmbed} = require('discord.js')
 const axios = require('axios')
 const Statcord = require('statcord.js')
-const blapi = require("blapi");
+const blapi = require('blapi')
 const config = require('./config')
 const commands = require('./help')
 
@@ -22,19 +22,21 @@ const statcord = new Statcord.Client({
 })
 
 bot.on('ready', async () => {
-	console.log(`Logged in as ${bot.user.tag}.`)
+	console.log(
+		`${bot.user.tag} is now online in ` + bot.guilds.cache.size + ' guilds.'
+	)
 	await statcord.autopost()
 
 	const botListAPIKeys = {
-		"top.gg": process.env.topgg_token,
-		"arcane-center.xyz": process.env.arcane_center_token,
-		"botlist.space": process.env.botlistspace_token,
-		"botsfordiscord.com": process.env.botsfordiscord_token,
-		"discord.bots.gg": process.env.discordbotsgg_token,
-		"discord.boats": process.env.discordboats_token,
-	  };
-	
-	  blapi.handle(bot, botListAPIKeys, 60);
+		'top.gg': process.env.topgg_token,
+		'arcane-center.xyz': process.env.arcane_center_token,
+		'botlist.space': process.env.botlistspace_token,
+		'botsfordiscord.com': process.env.botsfordiscord_token,
+		'discord.bots.gg': process.env.discordbotsgg_token,
+		'discord.boats': process.env.discordboats_token
+	}
+
+	blapi.handle(bot, botListAPIKeys, 60)
 })
 statcord.on('autopost-start', () => {
 	console.log('Started statcord autopost.')
@@ -242,7 +244,7 @@ const startGame = async (guild, channel, gamemaster, code) => {
 	games.push({
 		guild,
 		channel,
-		'start-time': Math.floor(new Date().getTime() / 100 / 60 / 60), // Hours
+		'start-time': Math.floor(Date.now() / 100 / 60 / 60), // Hours
 		gamemaster,
 		code
 	})
@@ -399,7 +401,7 @@ const toggleVCMute = async (message, state = true) => {
 }
 
 bot.on('message', async (message) => {
-	if (message.author.bot) return;
+	if (message.author.bot) return
 	const code = message.content
 	if (isValidGameCode(code)) {
 		try {
@@ -414,7 +416,7 @@ bot.on('message', async (message) => {
 
 // Send game code on mention
 bot.on('message', async (message) => {
-	if (message.author.bot) return;
+	if (message.author.bot) return
 	if (!message.mentions.has(bot.user)) return
 	try {
 		await statcord.postCommand('CODE_SEND', message.author.id)
@@ -434,10 +436,11 @@ const listGames = async (message) => {
 		}
 	}
 
-	if (gamesList.length == 0) {
+	if (gamesList.length === 0) {
 		return message.reply(startGameError)
 	}
 
+	// TODO: add game caching here
 	const generateEmbed = async (start) => {
 		const current = gamesList.slice(start, start + 5)
 
