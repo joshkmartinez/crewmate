@@ -3,6 +3,7 @@ require('./server')()
 const {Client, MessageEmbed} = require('discord.js')
 const axios = require('axios')
 const Statcord = require('statcord.js')
+const blapi = require("blapi");
 const config = require('./config')
 const commands = require('./help')
 
@@ -23,6 +24,17 @@ const statcord = new Statcord.Client({
 bot.on('ready', async () => {
 	console.log(`Logged in as ${bot.user.tag}.`)
 	await statcord.autopost()
+
+	const botListAPIKeys = {
+		"top.gg": process.env.topgg_token,
+		"arcane-center.xyz": process.env.arcane_center_token,
+		"botlist.space": process.env.botlistspace_token,
+		"botsfordiscord.com": process.env.botsfordiscord_token,
+		"discord.bots.gg": process.env.discordbotsgg_token,
+		"discord.boats": process.env.discordboats_token,
+	  };
+	
+	  blapi.handle(bot, botListAPIKeys, 60);
 })
 statcord.on('autopost-start', () => {
 	console.log('Started statcord autopost.')
