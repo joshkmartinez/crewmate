@@ -1,5 +1,6 @@
 require('./server')()
 
+require("dotenv").config();
 const {Client, MessageEmbed} = require('discord.js')
 const axios = require('axios')
 const Statcord = require('statcord.js')
