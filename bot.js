@@ -33,7 +33,8 @@ bot.on('ready', async () => {
 		'botlist.space': process.env.botlistspace_token,
 		'botsfordiscord.com': process.env.botsfordiscord_token,
 		'discord.bots.gg': process.env.discordbotsgg_token,
-		'discord.boats': process.env.discordboats_token
+		'discord.boats': process.env.discordboats_token,
+		"discordbotlist.com":process.env.discordbotlistcom_token,
 	}
 
 	blapi.handle(bot, botListAPIKeys, 60)
