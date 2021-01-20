@@ -476,7 +476,7 @@ const listGames = async (message) => {
 				g.gamemaster +
 				'>\n' +
 				(c
-					? '[Voice channel Invite](' + inv + ') (' + pNumber + ' players)'
+					? '[Click to join voice channel](' + inv + ') (' + pNumber + ' players)'
 					: 'Gamemaster not in voice channel')
 			)
 		}
