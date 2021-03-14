@@ -106,8 +106,8 @@ bot.on('message', async (message) => {
 							.join('\n')
 					)
 					embed.addField(
-						'Like Crewmate?',
-						'Consider [upvoting Crewmate](https://top.gg/bot/762721168741761075/vote)\n[Inviting the bot to your own server!](https://discord.com/oauth2/authorize?client_id=762721168741761075&permissions=4196416&scope=bot)\nOr [support development on patreon!](https://www.patreon.com/jokur) :smiley:'
+						'Enjoy using Crewmate?',
+						'[Upvote Crewmate](https://top.gg/bot/762721168741761075/vote)\n[Bot Invite](https://discord.com/oauth2/authorize?client_id=762721168741761075&permissions=4196416&scope=bot)'
 					)
 
 					embed.addField(
@@ -154,7 +154,7 @@ bot.on('message', async (message) => {
 			case 'end':
 			case 'stop':
 			case 'remove':
-				let endCode = args[0]
+				const endCode = args[0]
 				endCode != null ? (endCode = endCode.toUpperCase()) : null
 				const games = Object.values(await getGames())
 				for (i = 0; i < games.length; i++) {
