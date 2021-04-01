@@ -389,8 +389,8 @@ const toggleVCMute = async (message, state = true) => {
 						'`, have all been ' +
 						(state ? 'muted' : 'unmuted') +
 						'.\nIf you are still ' +
-						(state ? 'muted' : 'unmuted') +
-						' its because of a permissions error. Ensure that the bot role is above all other roles.' +
+						(state ? 'unmuted' : 'muted') +
+						' its because of a permissions error. Tell a server administrator to ensure that the Crewmate bot role is above all other roles.' +
 						(!state ? '\n\n**If you are dead, be sure to mute yourself!**' : '')
 				)
 			}
