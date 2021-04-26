@@ -107,7 +107,7 @@ bot.on('message', async (message) => {
 					)
 					embed.addField(
 						'Enjoy using Crewmate?',
-						'[Upvote Crewmate](https://top.gg/bot/762721168741761075/vote)\n[Bot Invite](https://discord.com/oauth2/authorize?client_id=762721168741761075&permissions=4196416&scope=bot)'
+						'[Upvote Crewmate](https://top.gg/bot/762721168741761075/vote)\n[Bot Invite](https://discord.com/oauth2/authorize?client_id=762721168741761075&permissions=4212800&scope=bot)'
 					)
 
 					embed.addField(

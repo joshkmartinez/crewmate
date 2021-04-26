@@ -1,7 +1,7 @@
 # Crewmate
 
 ### The best bot Among Us utility bot. Keeps track of game room codes and prevents in-game talking.
-#### [Invite](https://discord.com/api/oauth2/authorize?client_id=762721168741761075&permissions=4196416&scope=bot) - [Support Server](https://discord.gg/aRA7WcX) - [Upvote](https://top.gg/bot/762721168741761075/vote)  
+#### [Invite](https://discord.com/oauth2/authorize?client_id=762721168741761075&permissions=4212800&scope=bot) - [Support Server](https://discord.gg/aRA7WcX) - [Upvote](https://top.gg/bot/762721168741761075/vote)  
 Prefix: `>`  
 Commands:
 
@@ -16,4 +16,4 @@ Commands:
 Simply send a game code and Crewmate will take care of the rest:
 ![bot example](https://doggo.ninja/Hdaeyn.png)
 
-To invite the bot, [click here!](https://discord.com/api/oauth2/authorize?client_id=762721168741761075&permissions=4196416&scope=bot)
+To invite the bot, [click here!](https://discord.com/oauth2/authorize?client_id=762721168741761075&permissions=4212800&scope=bot)
