@@ -214,6 +214,7 @@ bot.on('message', async (message) => {
 
 			case 'unmute':
 			case 'um':
+			case 'u':
 				return toggleVCMute(message, false)
 
 			case 'stats':

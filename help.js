@@ -32,7 +32,7 @@ module.exports = {
 		format: 'mute'
 	},
 	unmute: {
-		aliases: ['um'],
+		aliases: ['um', 'u'],
 		description: 'Unmutes everyone in voice channel of the game master.',
 		format: 'unmute'
 	}
